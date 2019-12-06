@@ -3,10 +3,10 @@ import classes from './Layout.module.scss';
 import { EmailStep, CompanyStep, TimezoneStep, ConfirmationStep } from '../Steps/index';
 import NameStep from '../Steps/NameStep/NameStep';
 import { connect } from 'react-redux';
+import * as actionTypes from '../store/actions';
 
 class Layouts extends React.Component {
 	state = {
-		step: 1,
 		stepTitles: [
 			`Create your VINchain account.
 			Easy to use anytime, anywhere for everyone`,
@@ -14,110 +14,98 @@ class Layouts extends React.Component {
 			'Tracking company venichles? (optional)',
 			'Set your time zone',
 			'Check your data'
-		],
-		firstName: '',
-		lastName: '',
-		gender:'',
-		companyName: '',
-		email: '',
-		timezone: '',
-		accountCreated: false
+		]
 	};
-
-	inputChangedHandler = event =>
-		this.setState({ [event.target.name] : event.target.value })
-
-	nameChangedHandler = event =>
-		event.target.value.match(/[A-Za-z]{1,}/)
-		? this.setState({ [event.target.name] : event.target.value })
-		: this.setState({ [event.target.name] : '' })
-
-	createClickedHandler = event => {
-		event.preventDefault();
-		this.setState({ accountCreated: true });
-		this.props.onCreateAccount();
-	}
-
-	prevClickedHandler = event => {
-		event.preventDefault();
-		this.setState({ step: this.state.step - 1 })
-	}
-
-	nextClickedHandler = event => {
-		event.preventDefault();
-		if (this.state.step < 5) {
-			this.setState({ step: this.state.step + 1 });
-		}
-	}
 
 	render() {
 		let currentStep;
-		switch (this.state.step) {
-			case 2: currentStep = <NameStep 
-										clickedNext={this.nextClickedHandler}
-										clickedPrev ={this.prevClickedHandler}
-										firstNameChanged={this.nameChangedHandler}
-										lastNameChanged={this.nameChangedHandler}
-										genderSelected={this.inputChangedHandler}
-										firstName={this.state.firstName}
-										lastName={this.state.lastName}
-										gender={this.state.gender}/>;
+		switch (this.props.step) {
+			case 2: currentStep = <NameStep
+										clickedNext={this.props.nextClicked}
+										clickedPrev ={this.props.prevClicked}
+										firstNameChanged={(e) => this.props.nameInput(e.target)}
+										lastNameChanged={(e) => this.props.nameInput(e.target)}
+										genderSelected={(e) => this.props.dataInput(e.target)}
+										firstName={this.props.firstName}
+										lastName={this.props.lastName}
+										gender={this.props.gender}/>;
 			break;
-			case 3: currentStep = <CompanyStep 
-										clickedNext={this.nextClickedHandler}
-										clickedPrev ={this.prevClickedHandler}
-										companyName={this.state.companyName}
-										companyNameInput={this.inputChangedHandler} />;
+			case 3: currentStep = <CompanyStep
+										clickedNext={this.props.nextClicked}
+										clickedPrev ={this.props.prevClicked}
+										companyName={this.props.companyName}
+										companyNameInput={(e) => this.props.dataInput(e.target)} />;
 			break;
-			case 4: currentStep = <TimezoneStep 
-										clickedNext={this.nextClickedHandler}
-										clickedPrev ={this.prevClickedHandler}
-										timezoneSelected={this.inputChangedHandler}
-										timezone={this.state.timezone} />;
+			case 4: currentStep = <TimezoneStep
+										clickedNext={this.props.nextClicked}
+										clickedPrev ={this.props.prevClicked}
+										timezoneSelected={(e) => this.props.dataInput(e.target)}
+										timezone={this.props.timezone} />;
 			break;
-			case 5: currentStep = <ConfirmationStep 
-										clickedNext={this.nextClickedHandler}
-										clickedPrev ={this.prevClickedHandler}
-										clickedCreate={this.createClickedHandler}
-										email={this.state.email}
-										firstName={this.state.firstName}
-										lastName={this.state.lastName}
-										gender={this.state.gender}
-										companyName={this.state.companyName}
-										timezone={this.state.timezone}
-										changeEmail={this.inputChangedHandler}
-										firstNameChanged={this.nameChangedHandler}
-										lastNameChanged={this.nameChangedHandler}
-										genderSelected={this.inputChangedHandler}
-										companyNameChange={this.inputChangedHandler}
-										timezoneSelected={this.inputChangedHandler} />;
+			case 5: currentStep = <ConfirmationStep
+										clickedPrev ={this.props.prevClicked}
+										clickedCreate={this.props.onCreateAccount}
+										email={this.props.email}
+										firstName={this.props.firstName}
+										lastName={this.props.lastName}
+										gender={this.props.gender}
+										companyName={this.props.companyName}
+										timezone={this.props.timezone}
+										changeEmail={(e) => this.props.dataInput(e.target)}
+										firstNameChanged={(e) => this.props.nameInput(e.target)}
+										lastNameChanged={(e) => this.props.nameInput(e.target)}
+										genderSelected={(e) => this.props.dataInput(e.target)}
+										companyNameChange={(e) => this.props.dataInput(e.target)}
+										timezoneSelected={(e) => this.props.dataInput(e.target)} />;
 			break;
-			default: currentStep = <EmailStep 
-										inputEmail={this.inputChangedHandler} 
-										clickedNext={this.nextClickedHandler}
-										email={this.state.email} />;
+			default: currentStep = <EmailStep
+										inputEmail={(e) => this.props.dataInput(e.target)}
+										clickedNext={(event) => this.props.nextClicked(event)}
+										email={this.props.email} />;
 		}
 
 		return (
 			<div className={classes.layout}>
-				<p className={classes.layout__current_page}>{this.state.stepTitles[this.state.step - 1]}</p>
+				<p className={classes.layout__current_page}>{this.state.stepTitles[this.props.step - 1]}</p>
 				<p className={classes.layout__title}>Create account</p>
-				<div style={{ width: `100%`, height: `5px`, background: `-webkit-linear-gradient(left ,rgb(0, 137, 190), rgb(0, 137, 190) ${this.state.step * 20}%, rgba(236, 236, 236, 0.808) ${this.state.step * 20}%, rgba(236, 236, 236, 0.808) 100%)` }}
+				<div
+					style={{ width: `100%`, height: `5px`, background: `-webkit-linear-gradient(left ,rgb(0, 137, 190), rgb(0, 137, 190) ${this.props.step * 20}%, rgba(236, 236, 236, 0.808) ${this.props.step * 20}%, rgba(236, 236, 236, 0.808) 100%)` }}
 					className={classes.layout__progress}
-				></div>
-				{this.state.accountCreated ? 'Congratulations! Your account has been created' : currentStep}
+				>
+				</div>
+				{this.props.accountCreated ? 'Congratulations! Your account has been created' : currentStep}
 			</div>
 		)
 	}
 }
 
-const mapDispatchToProps = dispatch => {
+const mapStateToProps = state => {
 	return {
-		onCreateAccount: () => 	dispatch({ 
-									type: 'CREATE_ACCOUNT',
-									payload: Layouts.state
-								})
+		step: state.step,
+		email: state.email,
+		firstName: state.firstName,
+		lastName: state.lastName,
+		gender: state.gender,
+		companyName: state.companyName,
+		timezone: state.timezone,
+		accountCreated: state.accountCreated
 	};
 }
 
-export default connect(null, mapDispatchToProps)(Layouts);
+const mapDispatchToProps = dispatch => {
+	return {
+		onCreateAccount: (email) => dispatch({ type: actionTypes.CREATE_ACCOUNT }),
+		nextClicked: () => dispatch({ type: actionTypes.NEXT_PAGE }),
+		prevClicked: () => dispatch({ type: actionTypes.PREV_PAGE }),
+		dataInput: (value) => dispatch({
+									type: actionTypes.INPUT_DATA,
+									payload: { name: value.name, data: value.value }
+		}),
+		nameInput: (value) => dispatch({
+									type: actionTypes.INPUT_NAME,
+									payload: { name: value.name, data: value.value }
+		})
+	};
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Layouts);
