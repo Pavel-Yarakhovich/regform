@@ -9,6 +9,7 @@ const NextButton = props => {
 			<button 
 				className={style}
 				onClick={props.clickedNext}
+				disabled={props.disabled}
 				>{props.children}
 			</button>
 		);
